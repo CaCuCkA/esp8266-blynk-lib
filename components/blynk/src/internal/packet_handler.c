@@ -35,7 +35,6 @@ handle_message_packet(blynk_device_t* device) {
             handle_response(device);
             break;
         case BLYNK_CMD_HARDWARE:
-            log_trace("DETECT HARDWARE COMMAND!");
             handle_hardware(device);
             break;
         default:
@@ -67,7 +66,6 @@ handle_hardware(blynk_device_t* device) {
     char* extracted_args[BLYNK_MAX_ARGS];
 
     int32_t arg_count = extract_args_from_payload(priv_data, extracted_args);
-    log_trace("ARGUMENT NUMBER: %d", arg_count);
     if (arg_count > 0) {
         process_hardware_message(device, extracted_args, arg_count);
     }
@@ -120,7 +118,7 @@ process_hardware_message(blynk_device_t* device, char* args[], int32_t args_num)
     blynk_cmd_handler_t handler = find_handler_for_command(ctl, args[0]);
     mutex_wrapper_give(&state_mtx);
 
-    if (!CHECK_PTR(TAG, handler)) {
+    if (handler != NULL) {
         blynk_handler_params_t params = {
                 .device = device,
                 .id = private_data->message.id,
