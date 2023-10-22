@@ -25,6 +25,7 @@ typedef struct blynk_private_data blynk_private_data_t;
 typedef struct blynk_handler_data blynk_handler_data_t;
 typedef struct blynk_request_info blynk_request_info_t;
 typedef struct blynk_server_config blynk_server_config_t;
+typedef struct blynk_handler_params blynk_handler_params_t;
 typedef struct blynk_connection_settings blynk_connection_settings_t;
 
 // Function pointers
@@ -34,7 +35,7 @@ typedef void (* blynk_response_handler_t)(blynk_device_t*, blynk_status_t, void*
 
 typedef void (* blynk_state_handler_t)(blynk_device_t*, const blynk_state_event_t*, void*);
 
-typedef void (* blynk_cmd_handler_t)(blynk_device_t*, uint16_t, const char*, int, char**, void*);
+typedef void (* blynk_cmd_handler_t)(blynk_handler_params_t* params);
 
 
 struct blynk_message {
@@ -142,6 +143,16 @@ struct blynk_packet {
     blynk_response_handler_t handler;
     void* data;
     tick_t wait;
+};
+
+
+struct blynk_handler_params {
+    blynk_device_t* device;
+    uint16_t id;
+    const char* command;
+    int argc;
+    char** argv;
+    void* data;
 };
 
 #endif //ESP8266_BLYNK_LIB_TYPES_H
