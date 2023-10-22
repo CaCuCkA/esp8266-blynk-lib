@@ -1,5 +1,5 @@
-#ifndef BLYNK_DEFINES_H
-#define BLYNK_DEFINES_H
+#ifndef ESP8266_BLYNK_LIB_DEFINES_H
+#define ESP8266_BLYNK_LIB_DEFINES_H
 
 // types.h
 #define BLYNK_MAX_ARGS                  32
@@ -61,4 +61,4 @@
 // blynk_freertos_port.c
 #define BLYNK_TASK_PRIORITY             4
 
-#endif //BLYNK_DEFINES_H
+#endif //ESP8266_BLYNK_LIB_DEFINES_H
