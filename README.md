@@ -79,7 +79,9 @@ default parameters:
 #### - `blynk_state_t blynk_get_device_state(blynk_device_t* device)`
 
 **Description**:
+
 This function retrieves the current operational state of the specified Blynk device.
+
 ---
 
 #### - Update default value functions
@@ -359,3 +361,9 @@ create_semaphore(void) {
     return semaphore;
 }
 ```
+
+### FreeRTOS configurations
+
+The Blynk library operates as a FreeRTOS task. Within define.h, there's a specified default stack size that you can
+adjust to either increase or decrease based on your needs. Additionally, you have the flexibility to modify the queue
+size, which dictates the number of simultaneous responses the system can handle.
