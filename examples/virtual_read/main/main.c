@@ -29,12 +29,12 @@ vr_handler(blynk_handler_params_t* params) {
         switch (pin) {
             case 1: {
                 int temperature = get_temperature();
-                blynk_send(params->device, BLYNK_CMD_HARDWARE, WAIT, "si", "vw", pin, temperature);
+                blynk_send(params->device, BLYNK_CMD_HARDWARE, WAIT, "sii", "vw", pin, temperature);
                 break;
             }
             case 2: {
                 int light_intensity = get_light_intensity();
-                blynk_send(params->device, BLYNK_CMD_HARDWARE, WAIT, "si", "vw", pin, light_intensity);
+                blynk_send(params->device, BLYNK_CMD_HARDWARE, WAIT, "sii", "vw", pin, light_intensity);
                 break;
             }
             default:
