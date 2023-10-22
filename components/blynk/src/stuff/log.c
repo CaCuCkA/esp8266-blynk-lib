@@ -22,7 +22,7 @@ static const char* log_levels[] = {
         "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"
 };
 
-#ifndef LOG_USE_COLOR
+#ifdef LOG_USE_COLOR
 static const char* level_colors[] = {
         "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"
 };
@@ -86,11 +86,11 @@ static void
 stdout_callback_function(log_event_t* event) {
     char buf[TIME_BUFFER_SIZE] = "";
 
-#ifndef LOG_WITH_TIME
+#ifdef LOG_WITH_TIME
     buf[strftime(buf, sizeof(buf), "%H:%M:%S", event->timestamp)] = '\0';
 #endif
 
-#ifndef LOG_USE_COLOR
+#ifdef LOG_USE_COLOR
     fprintf(
         event->userdata, "%s %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
         buf, level_colors[event->log_level], log_levels[event->log_level],
