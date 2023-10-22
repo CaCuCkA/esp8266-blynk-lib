@@ -64,7 +64,7 @@ compose_blynk_message(uint8_t* output_buffer, uint64_t max_size, const blynk_mes
     output_buffer[3] = (message->length >> BYTE_SIZE) & BYTE_MASK;
     output_buffer[4] = message->length & BYTE_MASK;
 
-    uint64_t header_size = 5;
+    uint64_t header_size = BLYNK_HEADER_SIZE;
 
     if (message->length && message->command != BLYNK_CMD_RESPONSE) {
         uint64_t payload_size = message->length;

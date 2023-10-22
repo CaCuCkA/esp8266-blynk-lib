@@ -121,7 +121,17 @@ process_hardware_message(blynk_device_t* device, char* args[], int32_t args_num)
     mutex_wrapper_give(&state_mtx);
 
     if (!CHECK_PTR(TAG, handler)) {
-        handler(device, private_data->message.id, args[0], args_num - 1, args + 1, ctl->handlers[0].data);
+        blynk_handler_params_t params = {
+                .device = device,
+                .id = private_data->message.id,
+                .argv = args + 1,
+                .command = args[0],
+                .argc = args_num - 1,
+                .data = ctl->handlers[0].data
+
+        };
+
+        handler(&params);
         return;
     }
 

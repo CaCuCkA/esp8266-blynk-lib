@@ -43,6 +43,7 @@
 #define AUTO_ASSIGN_PORT                0
 
 // dispatching.c
+#define BLYNK_HEADER_SIZE               5
 #define FORMAT_BUFFER_SIZE              32
 #define BLYNK_DEVICE_IS_VALID(device_ptr) ((device_ptr) && (device_ptr)->valid)
 
