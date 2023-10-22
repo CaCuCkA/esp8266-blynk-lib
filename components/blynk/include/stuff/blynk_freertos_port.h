@@ -1,3 +1,12 @@
+/*
+ * MIT License - CaCuCkA (2023)
+ *
+ * Permission to use, copy, modify, and distribute this software for any purpose with or without fee
+ * is hereby granted, provided the above copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY. See the full MIT License for details.
+ */
+
 #ifndef ESP8266_BLYNK_LIB_FREERTOS_PORT_H
 #define ESP8266_BLYNK_LIB_FREERTOS_PORT_H
 
