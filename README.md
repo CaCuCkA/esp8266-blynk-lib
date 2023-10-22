@@ -364,6 +364,7 @@ create_semaphore(void) {
 
 ### FreeRTOS configurations
 
-The Blynk library operates as a FreeRTOS task. Within define.h, there's a specified default stack size that you can
+The Blynk library operates as a FreeRTOS task. Within [defines.h](components%2Fblynk%2Finclude%2Fstuff%2Fdefines.h)
+there's a specified default stack size that you can
 adjust to either increase or decrease based on your needs. Additionally, you have the flexibility to modify the queue
 size, which dictates the number of simultaneous responses the system can handle.
