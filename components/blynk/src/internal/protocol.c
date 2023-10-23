@@ -39,8 +39,6 @@
 #define TAG "[PROTOCOL]"
 
 
-static uint32_t free_pointer_time = 0;
-
 static blynk_err_t send_heartbit(blynk_device_t* device);
 
 static blynk_err_t blynk_busy_loop(blynk_device_t* device);
@@ -55,7 +53,11 @@ static blynk_err_t handle_read_from_ctl_socket(blynk_device_t* device);
 
 static blynk_err_t manage_communication_deadlines(blynk_device_t* device);
 
-static inline bool has_deadline_passed(tick_t deadline, tick_t current_time);
+static inline bool
+has_deadline_passed(tick_t
+deadline,
+tick_t current_time
+);
 
 static bool determined_closest_deadline(blynk_device_t* device, tick_t* deadline);
 
@@ -74,11 +76,12 @@ static void heartbit_callback(blynk_device_t* device, blynk_status_t status, UNU
 
 static void handle_awaiting_timer(blynk_device_t* device, tick_t now, blynk_awaiting_t* awaiting);
 
-static blynk_err_t prepare_blynk_request(blynk_device_t* device, blynk_request_info_t** request_ptr,
+static blynk_err_t prepare_blynk_request(blynk_device_t* device, blynk_request_info_t* request_ptr,
                                          int socket_fd, fd_set* write_set);
 
 static int wait_for_fd_activity(fd_set* read_fds, fd_set* write_fds, struct timeval* timeout_value,
                                 blynk_device_t* device);
+
 
 void
 blynk_run_task(void* pvParameters) {
@@ -164,8 +167,8 @@ process_device_communication(blynk_device_t* device, int communication_socket) {
         fd_set wrset;
         setup_fd_sets(&rdset, &wrset, communication_socket, &device->priv_data);
 
-        blynk_request_info_t* request_ptr;
-        if (prepare_blynk_request(device, &request_ptr, communication_socket, &wrset)) break;
+        blynk_request_info_t request;
+        if (prepare_blynk_request(device, &request, communication_socket, &wrset)) break;
 
         tick_t deadline;
         struct timeval timeval;
@@ -178,47 +181,35 @@ process_device_communication(blynk_device_t* device, int communication_socket) {
         }
 
         int active_fd_count = wait_for_fd_activity(&rdset, NULL, deadline_detected ? &timeval : NULL, device);
-        if (active_fd_count < 0) {
-            if (request_ptr) free(request_ptr);
-            break;
-        }
+        if (active_fd_count < 0) break;
+
 
         status_code = manage_communication_deadlines(device);
         if (status_code != BLYNK_EC_OK) {
             log_error("%s: Function %s cannot manage communication deadlines", TAG, __func__);
             disconnect_device(device, status_code, status_code == BLYNK_EC_ERRNO ? errno : 0);
-            if (request_ptr) free(request_ptr);
-
             break;
         }
 
         if (device->control.state == BLYNK_STATE_DISCONNECTED) {
             log_error("Device is disconnect");
-            if (request_ptr) free(request_ptr);
             break;
         }
 
         if (active_fd_count == 0) continue;
 
         if (FD_ISSET(device->priv_data.ctl_sockets[READ_SOCK_ID], &rdset)) {
-            if (handle_read_from_ctl_socket(device) != BLYNK_EC_OK) {
-                if (request_ptr) free(request_ptr);
-                break;
-            }
+            if (handle_read_from_ctl_socket(device) != BLYNK_EC_OK) break;
+
         }
 
         if (FD_ISSET(communication_socket, &rdset)) {
-            if (handle_read_from_main_socket(device, communication_socket) != BLYNK_EC_OK) {
-                if (request_ptr) free(request_ptr);
-                break;
-            }
+            if (handle_read_from_main_socket(device, communication_socket) != BLYNK_EC_OK) break;
+
         }
 
         if (device->priv_data.buf_size && FD_ISSET(communication_socket, &wrset)) {
-            if (handle_write_to_main_socket(device, communication_socket) != BLYNK_EC_OK) {
-                if (request_ptr) free(request_ptr);
-                break;
-            }
+            if (handle_write_to_main_socket(device, communication_socket) != BLYNK_EC_OK) break;
         }
 
     }
@@ -271,7 +262,7 @@ setup_fd_sets(fd_set* rdset, fd_set* wrset, int communication_socket, const blyn
 
 
 static blynk_err_t
-prepare_blynk_request(blynk_device_t* device, blynk_request_info_t** request_ptr, int socket_fd, fd_set* write_set) {
+prepare_blynk_request(blynk_device_t* device, blynk_request_info_t* request_ptr, int socket_fd, fd_set* write_set) {
     blynk_private_data_t* device_data = &device->priv_data;
 
     if (device_data->buf_size != 0) {
@@ -279,35 +270,30 @@ prepare_blynk_request(blynk_device_t* device, blynk_request_info_t** request_ptr
         return BLYNK_EC_OK;
     }
 
-    blynk_request_info_t* req_buffer = NULL;
-    bool is_received = queue_receive(device_data->ctl_queue, &req_buffer, NO_WAITING);
+
+    bool is_received = queue_receive(device_data->ctl_queue, request_ptr, NO_WAITING);
 
     if (!is_received) return BLYNK_EC_OK;
 
-    if (*request_ptr != NULL) free(*request_ptr);
-
-    if (!req_buffer->message.id) {
+    if (!request_ptr->message.id) {
         uint16_t msg_id = allocate_request_id(device,
-                                              req_buffer->deadline,
-                                              req_buffer->handler,
-                                              req_buffer->data);
+                                              request_ptr->deadline,
+                                              request_ptr->handler,
+                                              request_ptr->data);
 
         if (!msg_id) {
             log_error("%s: %s failed to generate message ID", TAG, __func__);
             disconnect_device(device, BLYNK_EC_MEM, 0);
-            if (req_buffer) free(req_buffer);
-
             return BLYNK_EC_MEM;
         }
 
-        req_buffer->message.id = msg_id;
+        request_ptr->message.id = msg_id;
     }
 
     device_data->buf_size = compose_blynk_message(device_data->write_buffer, BLYNK_MAX_PAYLOAD_LEN,
-                                                  &req_buffer->message);
+                                                  &request_ptr->message);
     device_data->total_byte_send = 0;
 
-    *request_ptr = req_buffer;
     FD_SET(socket_fd, write_set);
 
     return BLYNK_EC_OK;
@@ -414,8 +400,11 @@ send_heartbit(blynk_device_t* device) {
 
 
 static inline bool
-has_deadline_passed(tick_t deadline, tick_t current_time) {
-    return (int32_t) ((uint32_t) deadline - (uint32_t) current_time) <= 0;
+has_deadline_passed(tick_t
+deadline,
+tick_t current_time
+) {
+return (int32_t) ((uint32_t) deadline - (uint32_t) current_time) <= 0;
 }
 
 
