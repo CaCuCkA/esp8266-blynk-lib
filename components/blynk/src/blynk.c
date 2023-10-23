@@ -55,7 +55,7 @@ blynk_begin(blynk_device_t* device, const char* authentication_token) {
         return BLYNK_EC_MEM;
     }
 
-    device->priv_data.ctl_queue = create_queue(QUEUE_SIZE, sizeof(blynk_device_t*));
+    device->priv_data.ctl_queue = create_queue(QUEUE_SIZE, sizeof(blynk_request_info_t));
     if (device->priv_data.ctl_queue == NULL) {
         log_error("%s: Function %s unable to create communication queue", TAG, __func__);
         return BLYNK_EC_MEM;
